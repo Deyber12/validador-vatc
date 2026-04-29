@@ -2,12 +2,21 @@ import streamlit as st
 import pandas as pd
 
 # ---------------------------------------------------------
-# 1. CONFIGURACIÓN VISUAL
+# 1. CONFIGURACIÓN VISUAL Y BRANDING
 # ---------------------------------------------------------
-st.set_page_config(page_title="Validador VATC", page_icon="☁️", layout="centered")
+st.set_page_config(page_title="Validador VATC", page_icon="🔍", layout="centered")
 
-st.title("☁️ Consulta en Vivo (Cloud)")
-st.write("Conectado directamente a Google Sheets.")
+# Truco para centrar el logo: crear columnas y usar la del centro
+col1, col2, col3 = st.columns([1, 2, 1]) # Proporción de ancho: 1:2:1
+with col2:
+    # st.image automáticamente adapta el tamaño, pero puedes limitarlo con width=
+    # Pon aquí el nombre exacto de tu archivo (ej. "logo.png")
+    st.image("logo.png", use_container_width=True)
+
+st.markdown("<br>", unsafe_allow_html=True) # Un pequeño espacio extra
+# Tu título original
+st.title("🔍 Consulta de Clientes")
+st.write("Verifica el estatus en el archivo maestro central.")
 
 # ---------------------------------------------------------
 # 2. EL ENLACE MÁGICO
@@ -35,20 +44,30 @@ df_clientes = cargar_datos_nube()
 # ---------------------------------------------------------
 # 3. INTERFAZ Y BÚSQUEDA
 # ---------------------------------------------------------
-rif_input = st.text_input("RIF A CONSULTAR:").strip().upper()
+# max_chars=10 bloquea físicamente que escriban más de 10 caracteres
+rif_input = st.text_input("RIF A CONSULTAR (Ej: V123456789):", max_chars=10).strip().upper()
 
 if st.button("Guardar Consulta"):
+    
+    # --- INICIO DEL POLICÍA DE VALIDACIÓN ---
     if rif_input == "":
-        st.warning("⚠️ Ingrese un RIF.")
+        st.warning("⚠️ Por favor, ingrese un RIF.")
+        
+    elif len(rif_input) < 10:
+        # Si tiene 9 o menos, frena la búsqueda y avisa
+        st.warning("⚠️ El RIF está incompleto. Debe tener exactamente 10 caracteres (Ej: V123456789).")
+        
     elif df_clientes.empty:
         st.error("⚠️ No se pudo obtener la información de la nube.")
+        
+    # --- FIN DEL POLICÍA. SI TODO ESTÁ BIEN, BUSCA ---
     else:
-        # Lógica de validación
+        # Lógica de validación en tu base de datos
         if rif_input in df_clientes['RIF / CEDIULA'].values:
             # Encontrado en lista negra
             fila = df_clientes[df_clientes['RIF / CEDIULA'] == rif_input]
             empresa = fila['RAZÓN SOCIAL'].iloc[0]
-            st.error(f"🚨 CLIENTE EXISTE, CONTACTAR CON OFICINA CENTRAL.\n\nEmpresa: **{empresa}**")
+            st.error(f"🚨 CLIENTE EXISTE, CONTACTAR A OFICINA CENTRAL.\n\nEmpresa: **{empresa}**")
         else:
             # Cliente Limpio
-            st.success("✅ Cliente no existe o no se encontró. Puede proceder.")
+            st.success("✅ Cliente no existe o no se encontró. Puede proceder con la venta.")
