@@ -11,7 +11,7 @@ col1, col2, col3 = st.columns([1, 2, 1]) # Proporción de ancho: 1:2:1
 with col2:
     # st.image automáticamente adapta el tamaño, pero puedes limitarlo con width=
     # Pon aquí el nombre exacto de tu archivo (ej. "logo.png")
-    st.image("logo.png", use_container_width=200)
+    st.image("logo.png", use_container_width=100)
 
 st.markdown("<br>", unsafe_allow_html=True) # Un pequeño espacio extra
 # Tu título original
